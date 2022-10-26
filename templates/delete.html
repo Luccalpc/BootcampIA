@@ -1,0 +1,51 @@
+<html>
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <title>Controle de acesso </title>
+</head>
+<body>
+<div class="d-flex flex-column">
+    <div>
+        <nav class="navbar navbar-dark bg-dark" style="justify-content: flex-start">
+            <a class="navbar-brand">
+                <img src="https://press.zf.com/press/media/press_media/press_image/press_media_database/01_zf_logo2_3_2_748px.png"
+                     width="60" height="60" class="d-inline-block align-top" alt="">
+                <span style="font-size: 35px; margin-left: 20px; ">Controller</span>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/" style="font-size: 25px">Home</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/cadastro" style="font-size: 25px">Cadastro</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/camera" style="font-size: 25px">Datacenter</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/registro" style="font-size: 25px">Registro de Ponto</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/consulta" style="font-size: 25px">Consulta de Ponto</a>
+            </a>
+        </nav>
+    </div>
+</div> 
+  
+<h3>Remover Funcionário do Sistema</h3>  
+  
+    <form action="/deleterecord" method="post">  
+        Digite o ID do funcionário 
+        <br>
+        <input type="text" name="id">  
+        <input type="submit" class="btn btn-danger" value="Remover">  
+    </form>  
+    <a href="/" class="btn btn-secondary">Voltar</a> 
+</body>  
+</html>  

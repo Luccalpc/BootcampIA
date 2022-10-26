@@ -1,0 +1,73 @@
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>Streaming </title>
+</head>
+
+<body>
+<div class="d-flex flex-column">
+    <div>
+        <nav class="navbar navbar-dark bg-dark" style="justify-content: flex-start">
+            <a class="navbar-brand">
+                <img src="https://play-lh.googleusercontent.com/97yy9a4CKAY-_0xamFwrr2XaP23YZs-zglIPuDrD8eH-0sH6AXX-RpaES47L46YA2A"
+                     width="60" height="60" class="d-inline-block align-top" alt="">
+                <span style="font-size: 35px; margin-left: 20px">Controller</span>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/" style="font-size: 25px">Home</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/cadastro" style="font-size: 25px">Cadastro</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/camera" style="font-size: 25px">Datacenter</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/registro" style="font-size: 25px">Registro de Ponto</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/consulta" style="font-size: 25px">Consulta de Ponto</a>
+            </a>
+        </nav>
+    </div>
+    <br>
+    <h2>Cadastro de Funcionário</h2>   
+    <div style="margin-left: 20px">
+        <form method="POST" id="form" action = "/cadastro">
+            <label>
+                RG Funcional:
+                <input type="text" name="codigo" id="codigo" style="width: 200px">
+            </label>
+            <br>            
+            <label>
+                Nome:
+                <input type="text" name="name" id="name" style="width: 200px">
+            </label>
+            <br>
+            <label>
+                Email:
+                <input type="email" name="email" id="email" placeholder="nome@dominio.com" style="width: 200px ">
+            </label>
+            <br>
+            <input id="submitCodigo" class="btn btn-primary" type="submit" value="Cadastrar">
+            <br>
+        </form>
+
+        {#<button onclick="addCam()">Cadastrar fotos</button>#}
+
+    </div>
+    <div class="d-flex justify-content-center" id="divX">
+        {#<img src="{{ url_for('video_capture') }}" id="img" style="display: none">#}
+    </div>
+</div>
+<script>
+    document.getElementById("form").onsubmit(function (e) {
+        e.preventDefault();
+    });
+</script>
+</body>

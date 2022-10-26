@@ -1,0 +1,97 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif !important;
+}
+
+.container-cabecalho{
+    width: 100%;
+    background-color: black;
+}
+
+.footer{
+    display: flex;
+    align-content: center;
+    align-items: center;
+    width: 100%;
+    background-color: black;
+    padding: 20px;
+    position: absolute;
+    bottom: 0;
+}
+
+.footer p{
+    color: white;
+    align-items: center;
+    align-self: center;
+    align-content: center;
+}
+
+form.container{
+    margin-top: 100px;
+}
+
+div.cadastro{
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.botao-cadastro{
+    margin-left: 5px;
+}
+
+textarea{
+    resize: none;
+}
+
+/* Style Teste */
+
+#mail {
+    text-align: center;
+    font-size: 24px;
+    margin-top: 2px;
+    margin-bottom: 100px;
+}
+#navbar {
+    background-color: black !important;
+}
+#success {
+    margin-top: 30px;
+}
+.container {
+    max-width: 800px !important;
+    margin: 0px auto;
+}
+
+.row {
+    margin: 5px;
+}
+
+label {
+    margin-bottom: 5px;
+}
+
+.btn-primary {
+    display: block !important;
+    text-align: center;
+    margin: 15px auto;
+    background-color: #E73819 !important;
+    border: #E73819 !important;
+}
+
+.btn-primary:hover{
+    background-color: black !important;
+}
+
+.form-control:focus {
+    border-color: #E73819;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(255, 115, 0, 0.918);
+}
+
+#btn-paginaInicial{
+    margin: 0 auto;
+    width: 200px;
+}

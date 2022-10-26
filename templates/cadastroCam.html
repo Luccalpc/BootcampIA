@@ -1,0 +1,60 @@
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>Streaming </title>
+</head>
+
+<body>
+<script>
+    cams = 0;
+
+    function addCam() {
+        if (cams === 1) return;
+        var img = document.createElement("img");
+        img.src = 'video_capture';
+        var src = document.getElementById("divX");
+        src.appendChild(img);
+        cams = cams + 1;
+    }
+</script>
+<div class="d-flex flex-column">
+    <div>
+        <nav class="navbar navbar-dark bg-dark" style="justify-content: flex-start">
+            <a class="navbar-brand">
+                <img src="https://play-lh.googleusercontent.com/97yy9a4CKAY-_0xamFwrr2XaP23YZs-zglIPuDrD8eH-0sH6AXX-RpaES47L46YA2A"
+                     width="60" height="60" class="d-inline-block align-top" alt="">
+                <span style="font-size: 35px; margin-left: 20px">Controle de Acesso</span>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/" style="font-size: 25px">Home</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/cadastro" style="font-size: 25px">Cadastro</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/camera" style="font-size: 25px">Datacenter</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/registro" style="font-size: 25px">Registro de Ponto</a>
+            </a>
+
+            <a class="navbar-brand">
+                <a class="nav-link" href="/consulta" style="font-size: 25px">Consulta de Ponto</a>
+            </a>
+        </nav>
+    </div>
+    <br>
+    <div style="margin-left: 20px">
+
+        <button onclick="addCam()">Cadastrar fotos</button>
+
+    </div>
+    <div class="d-flex justify-content-center" id="divX">
+        {#<img src="{{ url_for('video_capture') }}" id="img" style="display: none">#}
+    </div>
+</div>
+</body>
