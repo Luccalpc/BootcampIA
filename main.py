@@ -1,11 +1,12 @@
 import datetime
-from datetime import datetime
 import time
 import cv2
 import numpy as np
 import sqlite3  
 from tkinter import messagebox
-from flask import Flask, render_template, Response, request
+from flask import Flask, render_template, Response, request, jsonify
+import jwt
+from functools import wraps
 
 
 detector_face = cv2.CascadeClassifier("haarcascade/haarcascade_frontalface_default.xml")
@@ -15,22 +16,98 @@ width, height = 220, 220
 font = cv2.FONT_HERSHEY_COMPLEX_SMALL
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'f748fb58f73d3d69a0e33225c10653ee81de9050a2b98c7c2c0389dec6cc03a7'
 codigo: int = 0
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.args.get('token')
+        if not token:
+            return jsonify({'message' : 'Token is missing !'}) 
+        try:
+            token = jwt.decode(token, app.config['SECRET_KEY'],algorithms="HS256")  
+        except:
+            return  jsonify({'message' : 'Token is invalid'}) 
+        return f(*args, **kwargs)
+    return decorated
     
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/admin')
+@token_required
 def admin():
-    return render_template('admin.html')
+    return render_template('admin-dashboard.html')
 
 @app.route('/camera')
 def camera():
     return render_template('camera.html')
 
+@app.route('/user')
+def user():
+    return render_template('user-dashboard.html')
 
+@app.route('/verify', methods = ['GET', 'POST'])
+def verify():
+    if request.method == 'POST':
+        connection = sqlite3.connect('db/bootcamp.db')
+        cursor = connection.cursor()
 
+        email = request.form ['email']
+        password = request.form ['password']
+
+        print(email,password)
+
+        query = "SELECT email,password,isAdmin FROM visitors where email= '"+email+"' and password = '"+password+"'"
+        
+        cursor.execute(query) 
+        res = cursor.fetchone()[2]
+        print(res)
+        
+        cursor.execute(query) 
+        results = cursor.fetchall()
+        print(results)
+        
+        if len(results) == 0:
+            print ("Sorry, Wrong Password")             
+        else:
+            token = jwt.encode({'user': email, 'exp': datetime.datetime.utcnow()+ datetime.timedelta(minutes= 5)}, app.config['SECRET_KEY'], algorithm="HS256")
+            print(token)     
+            if res == 0:
+                return render_template('user-dashboard.html')
+            else:
+                return render_template('admin-dashboard.html')
+                
+
+            
+
+    return render_template('index.html')
+
+# @app.route('/verify-privilege', methods = ["POST","GET"] )
+# def verify(): 
+#     if request.method == "POST": 
+#         try:
+#             email = request.form["email"] 
+#             print(email) 
+#             with sqlite3.connect("db/bootcamp.db") as connection:  
+#                 cursor = connection.cursor()  
+#                 query = f"SELECT isAdmin FROM visitors WHERE email = '{email}'"
+#                 print(query)
+#                 res = cursor.fetchone()[0]
+#                 print(res)
+#                 if res == 0:
+#                     return render_template('user-dashboard.html')  
+#                 else:
+#                     return render_template('admin-dashboard.html')
+#         except:  
+#             #connection.rollback()  
+#             msg = "We can not add the employee to the list"  
+#         #finally:  
+#             #connection.close()  
+#     return render_template('index.html')
+            
 
 @app.route("/cadastro",methods = ["POST","GET"] )  
 def my_form_post():

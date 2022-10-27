@@ -1,6 +1,3 @@
-set FLASK_APP=stream_video.py && set FLASK_ENV=development && flask run
+set FLASK_APP=main.py && set FLASK_DEBUG=true && flask run
 
-
-set FLASK_APP=appv3_jwt.py && set FLASK_ENV=development && flask run
-set FLASK_APP=appv3_jwt.py && set FLASK_DEBUG=true && flask run
-
+set FLASK_APP=validacao_usuario.py && set FLASK_DEBUG=true && flask run
