@@ -1,0 +1,34 @@
+a.img-logo{
+    background-color: black;
+}
+
+div.container{
+    display: flex;
+    background-color: black;
+}
+
+header.header{
+    background-color: black;
+}
+
+.header_menu ul li {
+	display: inline-block;
+	margin-left: 25px;
+	margin-top: 25px;
+}
+
+.header_menu ul li a {
+	color: white;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: .1em;
+	font-size: 14px;
+	line-height: 20px;
+	padding: 10px 0;
+	transition: 0.3s ease;
+	/* Transição para quando passa o mouse em cima do menu */
+}
+
+.header_menu ul li a:hover {
+	color: rgb(12, 104, 209);
+}

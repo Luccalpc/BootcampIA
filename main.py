@@ -24,7 +24,8 @@ def token_required(f):
     def decorated(*args, **kwargs):
         token = request.args.get('token')
         if not token:
-            return jsonify({'message' : 'Token is missing !'}) 
+            #return jsonify({'message' : 'Token is missing !'}) 
+            return render_template('index.html')
         try:
             token = jwt.decode(token, app.config['SECRET_KEY'],algorithms="HS256")  
         except:
@@ -46,6 +47,7 @@ def camera():
     return render_template('camera.html')
 
 @app.route('/user')
+@token_required
 def user():
     return render_template('user-dashboard.html')
 
@@ -60,11 +62,15 @@ def verify():
 
         print(email,password)
 
-        query = "SELECT email,password,isAdmin FROM visitors where email= '"+email+"' and password = '"+password+"'"
+        query = "SELECT email,password,isAdmin, name FROM visitors where email= '"+email+"' and password = '"+password+"'"
         
         cursor.execute(query) 
         res = cursor.fetchone()[2]
         print(res)
+        
+        cursor.execute(query) 
+        name = cursor.fetchone()[3]
+        print(name)
         
         cursor.execute(query) 
         results = cursor.fetchall()
@@ -73,57 +79,34 @@ def verify():
         if len(results) == 0:
             print ("Sorry, Wrong Password")             
         else:
-            token = jwt.encode({'user': email, 'exp': datetime.datetime.utcnow()+ datetime.timedelta(minutes= 5)}, app.config['SECRET_KEY'], algorithm="HS256")
+            token = jwt.encode({'user': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes= 5)}, app.config['SECRET_KEY'], algorithm="HS256")
             print(token)     
             if res == 0:
-                return render_template('user-dashboard.html')
+                return render_template('user-dashboard.html', name = name)
             else:
-                return render_template('admin-dashboard.html')
+                return render_template('admin-dashboard.html', name = name)
                 
-
-            
-
     return render_template('index.html')
 
-# @app.route('/verify-privilege', methods = ["POST","GET"] )
-# def verify(): 
-#     if request.method == "POST": 
-#         try:
-#             email = request.form["email"] 
-#             print(email) 
-#             with sqlite3.connect("db/bootcamp.db") as connection:  
-#                 cursor = connection.cursor()  
-#                 query = f"SELECT isAdmin FROM visitors WHERE email = '{email}'"
-#                 print(query)
-#                 res = cursor.fetchone()[0]
-#                 print(res)
-#                 if res == 0:
-#                     return render_template('user-dashboard.html')  
-#                 else:
-#                     return render_template('admin-dashboard.html')
-#         except:  
-#             #connection.rollback()  
-#             msg = "We can not add the employee to the list"  
-#         #finally:  
-#             #connection.close()  
-#     return render_template('index.html')
+@app.route('/cadastro')
+def cadastro():
+    return render_template('cadastro.html')
             
-
 @app.route("/cadastro",methods = ["POST","GET"] )  
 def my_form_post():
     msg = "msg"  
     if request.method == "POST":  
         try:  
-            nome = request.form["nome"]  
+            name = request.form["name"]  
             email = request.form["email"]
-            senha = request.form["senha"]
+            password = request.form["password"]
             cpf = request.form["cpf"]
-            dataNascimento = request.form["dataNascimento"]
-            dataVisita = request.form["dataVisita"]
-            motivoVisita = request.form["motivoVisita"] 
-            with sqlite3.connect("db/visitante.db") as con:  
+            birthDate = request.form["birthDate"]
+            visitDate = request.form["visitDate"]
+            visitReason = request.form["visitReason"] 
+            with sqlite3.connect("db/bootcamp.db") as con:  
                 cur = con.cursor()  
-                cur.execute("INSERT into Employees (nome, email, ) values (?,?,?)",(nome,email,senha,cpf,dataNascimento,dataVisita,motivoVisita))  
+                cur.execute("INSERT into visitors (name,email,password,cpf,birthDate,visitDate,visitReason, isAdmin ) values (?,?,?,?,?,?,?, ?)",(name,email,password,cpf,birthDate,visitDate,visitReason, 0))  
                 con.commit()  
                 msg = "Employee successfully Added" 
         except:  
@@ -131,7 +114,7 @@ def my_form_post():
             msg = "We can not add the employee to the list"  
         finally:  
             con.close()  
-    return render_template('cadastro.html')
+    return render_template('cadastroCam.html')
 
 
 @app.route('/cadastro-camera')
@@ -331,7 +314,12 @@ def work():
             break
 
 def capture():
-    
+    connection = sqlite3.connect('db/bootcamp.db')
+    cursor = connection.cursor()
+    queryBuscaId = 'SELECT id FROM visitors ORDER BY id DESC LIMIT 1'
+    cursor.execute(queryBuscaId)
+    idVisitante = cursor.fetchone()[0]
+    print(idVisitante)
     cap = cv2.VideoCapture(0)
 
     larg, alt = 220, 220
@@ -349,7 +337,7 @@ def capture():
 
                 if np.average(image_grey) > 70:
                     imagemface = cv2.resize(image_grey[y:y + a, x:x + l], (larg, alt))
-                    cv2.imwrite("fotos/pessoa." + str(codigo) + "." + str(amostra) + ".jpg", imagemface) + amostra
+                    cv2.imwrite("fotos/pessoa." + str(idVisitante) + "." + str(amostra) + ".jpg", imagemface) + amostra
                     print("Foto capturada com sucesso - " + str(amostra))
                     amostra += 1
 

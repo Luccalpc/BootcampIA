@@ -8,10 +8,11 @@ command = """CREATE TABLE IF NOT EXISTS visitors(id INTEGER PRIMARY KEY, name TE
 cursor.execute(command)
 print("O Banco de dados Bancotest.db foi criado com Sucesso !!! ")    
 
-cursor.execute("INSERT INTO visitors VALUES (0, 'Renan', 'renan@facens.br','Renan123', '429.443.628-01', '14-01-1995', '25-12-2022', 'matrícula', 1 )")
-cursor.execute("INSERT INTO visitors VALUES (1, 'Lucca', 'lucca@facens.br','Lucca123', '439.443.628-01', '15-01-1995', '28-12-2022', 'entrevista', 1 )")
-cursor.execute("INSERT INTO visitors VALUES (2, 'Charles', 'charles@facens.br','Charles123', '449.443.628-01', '11-01-1995', '20-12-2022', 'administração', 0 )")
-cursor.execute("INSERT INTO visitors VALUES (3, 'Leonardo', 'leonardo@facens.br','Leonardo123', '419.443.628-01', '12-01-1995', '21-12-2022', 'visita ao campus', 0 )")
+#cursor.execute("INSERT INTO visitors VALUES (1, 'Renan', 'renan@facens.br','Renan123', '429.443.628-01', '1995-01-14', '2022-12-25', 'matrícula', 1 )")
+#cursor.execute("INSERT INTO visitors VALUES (2, 'Lucca', 'lucca@facens.br','Lucca123', '439.443.628-01', '1995-01-15', '2022-12-28', 'entrevista', 1 )")
+# cursor.execute("INSERT INTO visitors VALUES (3, 'Charles', 'charles@facens.br','Charles123', '449.443.628-01', '1995-01-11', '2022-12-20', 'administração', 0 )")
+# cursor.execute("INSERT INTO visitors VALUES (4, 'Leonardo', 'leonardo@facens.br','Leonardo123', '419.443.628-01', '1995-01-12', '2022-12-21', 'visita ao campus', 0 )")
+cursor.execute("DELETE FROM visitors WHERE id = 3 ")
 connection.commit() 
 
 

@@ -22,8 +22,8 @@
     <form action="/cadastro" id="form" class="container" method="post">
         <div class="row">
             <div class="col form-group">
-                <label for="input-nome">Nome</label>
-                <input name="nome" id="nome" type="text" class="form-control" placeholder="Digite o seu nome" required
+                <label for="input-name">Nome</label>
+                <input name="name" id="name" type="text" class="form-control" placeholder="Digite o seu nome" required
                     maxlength="100">
             </div>
         </div>
@@ -38,8 +38,8 @@
 
         <div class="row">
             <div class="col form-group">
-                <label for="input-senha">Senha</label>
-                <input name="senha" id="senha" type="password" class="form-control" placeholder="Digite sua senha"
+                <label for="input-password">Senha</label>
+                <input name="password" id="password" type="password" class="form-control" placeholder="Digite sua senha"
                     required maxlength="30">
             </div>
         </div>
@@ -54,22 +54,22 @@
 
         <div class="row">
             <div class="col form-group">
-                <label for="input-dataNascimento">Data de nascimento</label>
-                <input pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" name="dataNascimento" id="dataNascimento" type="date"
+                <label for="input-birthDate">Data de nascimento</label>
+                <input pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" name="birthDate" id="birthDate" type="date"
                     class="form-control date form-control" placeholder="dd/mm/yyyy" required>
             </div>
 
             <div class="col form-group">
-                <label for="input-dataVisita">Data da Visita</label>
-                <input pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" name="dataVisita" id="dataVisita" type="date"
+                <label for="input-visitDate">Data da Visita</label>
+                <input pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" name="visitDate" id="visitDate" type="date"
                     class="form-control date form-control" placeholder="dd/mm/yyyy" required>
             </div>
         </div>
 
         <div class="row">
             <div class="col form-group">
-                <label for="input-motivoVisita">Motivo da visita</label>
-                <textarea name="motivoVisita" id="motivoVisita" type="text" class="form-control date form-control"
+                <label for="input-visitReason">Motivo da visita</label>
+                <textarea name="visitReason" id="visitReason" type="text" class="form-control date form-control"
                     placeholder="Informe o motivo da visita" required></textarea>
             </div>
         </div>
@@ -79,19 +79,9 @@
         </div>
     </form>
 
-    {#<button onclick="addCam()">Cadastrar fotos</button>#}
-
-    <div class="d-flex justify-content-center" id="divX">
-        {#<img src="{{ url_for('video_capture') }}" id="img" style="display: none">#}
-    </div>
-
 </body>
 {% include 'footer.html' %}
 
-<script>
-    document.getElementById("form").onsubmit(function (e) {
-        e.preventDefault();
-    });
-</script>
+
 
 </html>

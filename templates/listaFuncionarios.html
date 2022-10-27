@@ -1,66 +1,46 @@
 <html>
+
 <head>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/header-admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" />
     <title>Controle de acesso </title>
 </head>
+
+{% include 'header-admin.html' %}
+
 <body>
-<div class="d-flex flex-column">
-    <div>
-        <nav class="navbar navbar-dark bg-dark" style="justify-content: flex-start">
-            <a class="navbar-brand">
-                <img src="https://press.zf.com/press/media/press_media/press_image/press_media_database/01_zf_logo2_3_2_748px.png"
-                     width="60" height="60" class="d-inline-block align-top" alt="">
-                <span style="font-size: 40px; margin-left: 20px; ">Controle de Acesso</span>
-            </a>
 
-            <a class="navbar-brand">
-                <a class="nav-link" href="/" style="font-size: 25px">Home</a>
-            </a>
+    <table class="table table-hover">
+        <thead class="thead-dark">
+            <th>ID</th>
+            <th>RG Funcional</th>
+            <th>Nome</th>
+            <th>Email</th>
+        </thead>
 
-            <a class="navbar-brand">
-                <a class="nav-link" href="/cadastro" style="font-size: 25px">Cadastro</a>
-            </a>
+        {% for row in rows %}
 
-            <a class="navbar-brand">
-                <a class="nav-link" href="/camera" style="font-size: 25px">Datacenter</a>
-            </a>
+        <tr>
+            <th>{{row["id"]}}</th>
+            <th>{{row["rgfuncional"]}}</th>
+            <td>{{row["name"]}}</td>
+            <td>{{row["email"]}}</td>
 
-            <a class="navbar-brand">
-                <a class="nav-link" href="/registro" style="font-size: 25px">Registro de Ponto</a>
-            </a>
+        </tr>
 
-            <a class="navbar-brand">
-                <a class="nav-link" href="/consulta" style="font-size: 25px">Consulta</a>
-            </a>
-        </nav>
-    </div>
-</div>
+        {% endfor %}
+    </table>
+    <br><br>
 
-<table class="table table-hover">
-    <thead class="thead-dark">  
-        <th>ID</th>  
-        <th>RG Funcional</th>  
-        <th>Nome</th>  
-        <th>Email</th>  
-    </thead>  
-      
-    {% for row in rows %}  
-      
-        <tr>  
-            <th>{{row["id"]}}</th>  
-            <th>{{row["rgfuncional"]}}</th>  
-            <td>{{row["name"]}}</td>  
-            <td>{{row["email"]}}</td> 
-              
-        </tr>  
-      
-    {% endfor %}  
-</table>  
-<br><br>  
-  
-<a href="/" class="btn btn-secondary">Voltar</a>  
-  
-</body>  
-</html>  
+    <a href="/" class="btn btn-secondary">Voltar</a>
+
+</body>
+
+{% include 'footer.html' %}
+
+</html>
