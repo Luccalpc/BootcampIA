@@ -18,14 +18,14 @@ cursor.close()
 
 #Criação da Tabela agendamento
 cursor = connection.cursor()
-command = """CREATE TABLE IF NOT EXISTS agendamento(registro INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL, name TEXT NOT NULL, visitDate TEXT NOT NULL, visitReason TEXT NOT NULL, status TEXT NOT NULL)"""
+command = """CREATE TABLE IF NOT EXISTS agendamento(registro INTEGER PRIMARY KEY AUTOINCREMENT, id INTEGER UNIQUE NOT NULL, email TEXT NOT NULL, name TEXT NOT NULL, visitDate TEXT NOT NULL, visitReason TEXT NOT NULL, status TEXT NOT NULL)"""
 cursor.execute(command)
 cursor.close() 
 
 
-#Criação da Tabela ponto
+#Criação da Tabela historicoAcesso
 cursor = connection.cursor()
-command = """CREATE TABLE IF NOT EXISTS ponto(registro INTEGER PRIMARY KEY AUTOINCREMENT, id INTEGER,       name TEXT NOT NULL, email TEXT NOT NULL, cpf TEXT NOT NULL, birthDate TEXT NOT NULL, visitDate TEXT NOT NULL, visitReason TEXT NOT NULL)"""
+command = """CREATE TABLE IF NOT EXISTS historicoAcesso(registerNumber INTEGER PRIMARY KEY AUTOINCREMENT, id INTEGER NOT NULL, currentDate TEXT NOT NULL, currentHour TEXT NOT NULL, isApproved TEXT NOT NULL)"""
 cursor.execute(command)
 cursor.close() 
 

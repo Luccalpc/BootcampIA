@@ -1,6 +1,6 @@
 import hashlib
 import os
-from datetime import datetime
+from datetime import datetime, date
 import datetime
 from lib2to3.pgen2 import token
 import time
@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 import sqlite3  
 from tkinter import messagebox
-from flask import Flask, make_response, render_template, Response, request, jsonify
+from flask import Flask, make_response, redirect, render_template, Response, request, jsonify, url_for
 import jwt
 from functools import wraps
 
@@ -139,26 +139,22 @@ def cadastroCamera():
             
 @app.route("/agendarVisita",methods = ["POST","GET"] )  
 def agendarVisita():
-    msg = "msg"  
     if request.method == "POST":  
         try:              
             userToken = request.cookies.get('token')
-            print('a')
             userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
-            print('b')
             userEmail = (userTokenDecode["user"])  
-            print('c')
             name = request.form["name"]
-            print('d')
             visitDate = request.form["visitDate"]
-            print('e')
             visitReason = request.form["visitReason"] 
-            print('f')
             with sqlite3.connect("db/bootcamp.db") as con:  
                 cur = con.cursor()  
-                cur.execute("INSERT into agendamento(email,name,visitDate,visitReason, status) values (?,?,?,?,?)",(userEmail,name,visitDate,visitReason, 'Pendente de aprovação'))  
+                query = "SELECT id from visitors WHERE email = '" + userEmail + "'"
+                print(query)
+                cur.execute(query)
+                userID = cur.fetchone()[0] 
+                cur.execute("INSERT into agendamento(id, email,name,visitDate,visitReason, status) values (?,?,?,?,?,?)",(userID, userEmail,name,visitDate,visitReason, 'Pendente de aprovação'))  
                 con.commit()  
-                msg = "Book successfully Added" 
         except:  
             con.rollback()  
             msg = "We can not book"  
@@ -175,7 +171,7 @@ def agendamentos():
         con = sqlite3.connect("db/bootcamp.db")  
         con.row_factory = sqlite3.Row  
         cur = con.cursor()  
-        queryUserEmail = "SELECT registro,name,visitDate,visitReason, status FROM agendamento WHERE email = '" + userEmail + "'"
+        queryUserEmail = "SELECT registro,id, email, name,visitDate,visitReason, status FROM agendamento WHERE email = '" + userEmail + "'"
         print(queryUserEmail)
         cur.execute(queryUserEmail)  
         rows = cur.fetchall()  
@@ -183,23 +179,41 @@ def agendamentos():
     except:          
         return render_template("fail.html")  
     
-@app.route("/aprovarAgendamento")  
-def aprovarAgendamento():  
-    try:
-        userToken = request.cookies.get('token')
-        userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
-        userEmail = (userTokenDecode["user"])  
-        con = sqlite3.connect("db/bootcamp.db")  
-        con.row_factory = sqlite3.Row  
-        cur = con.cursor()  
-        aprovar = request.form['botao-aprovar']
-        print('aprovar = ', aprovar)
-        query = "UPDATE agendamento SET status = 'aprovado' WHERE registro =" + aprovar
-        cur.execute(query)  
-        rows = cur.fetchall()  
-        return render_template("agendamentosUser.html",rows = rows)     
-    except:          
-        return render_template("fail.html")  
+@app.route("/aprovarAgendamento", methods = ["POST","GET"])  
+def aprovarAgendamento(): 
+    if request.method == "POST": 
+        try:
+            userToken = request.cookies.get('token')
+            userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
+            userEmail = (userTokenDecode["user"])  
+            con = sqlite3.connect("db/bootcamp.db")  
+            con.row_factory = sqlite3.Row  
+            cur = con.cursor()  
+            aprovar = request.form['botao-aprovar']
+            query = "UPDATE agendamento SET status = 'Aprovado' WHERE registro =" + aprovar
+            cur.execute(query) 
+            con.commit()     
+            return redirect(url_for('aprovacoesPendentes'))
+        except:          
+            return render_template("fail.html")
+        
+@app.route("/reprovarAgendamento", methods = ["POST","GET"])  
+def reprovarAgendamento(): 
+    if request.method == "POST": 
+        try:
+            userToken = request.cookies.get('token')
+            userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
+            userEmail = (userTokenDecode["user"])  
+            con = sqlite3.connect("db/bootcamp.db")  
+            con.row_factory = sqlite3.Row  
+            cur = con.cursor()  
+            reprovar = request.form['botao-reprovar']
+            query = "UPDATE agendamento SET status = 'Reprovado' WHERE registro =" + reprovar
+            cur.execute(query) 
+            con.commit() 
+            return redirect(url_for('aprovacoesPendentes'))  
+        except:          
+            return render_template("fail.html")  
 
 
 @app.route('/registro')
@@ -208,8 +222,8 @@ def registro():
 
 
 
-@app.route('/historicoPonto')
-def historicoPonto():
+@app.route('/historicoAcesso')
+def historicoAcesso():
     try:
         con = sqlite3.connect("db/bootcamp.db")  
         con.row_factory = sqlite3.Row  
@@ -217,7 +231,7 @@ def historicoPonto():
         cur.execute("select * from ponto")  
         rows = cur.fetchall()
 
-        return render_template("historicoPonto.html",rows = rows) 
+        return render_template("historicoAcesso.html",rows = rows) 
     
     except:  
         con.rollback()  
@@ -358,15 +372,15 @@ def aprovacoesPendentes():
 def video_feed():
     return Response(portaria(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/regponto')
-def regponto():
-    return Response(registroPonto(), mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/regAcesso')
+def regAcesso():
+    return Response(registroAcesso(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/video_capture')
 def video_capture():
     return Response(capture(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-def registroPonto():
+def registroAcesso():
     cap = cv2.VideoCapture(0)
     time.sleep(2)
     i = 0
@@ -393,23 +407,29 @@ def registroPonto():
                     con = sqlite3.connect("db/bootcamp.db")
                     cursor = con.cursor()
                     print("Connected to SQLite")
-
-                    sqlite_select_query = "select * from visitors WHERE id =" + str(class_id)
-                    
-                    cursor.execute(sqlite_select_query)
-                    data = datetime.datetime.now()
+                    selectAllVisitorsById = "select * from visitors WHERE id =" + str(class_id)    
+                    cursor.execute(selectAllVisitorsById)      
                     linha = cursor.fetchall()
                     for dado in linha:
                         idUser = dado[0]
-                        nameUser = dado[1]
-                        emailUser = dado[2]
-                        cpfUser = dado[4]
-                        birthDateUser = dado[5]
-                        visitDateUser = dado[6]
-                        visitReasonUser = dado[7]
-                      
                         
-                    cursor.execute("INSERT into ponto (id ,name, email, cpf, birthDate, visitDate, visitReason ) values (?, ?, ?, ?, ?, ?, ?)",(idUser,nameUser, emailUser, cpfUser, birthDateUser, visitDateUser, visitReasonUser))  
+                    currentDate = date.today()
+                    currentDate = currentDate.strftime("%d/%m/%Y")       
+                    currentHour = datetime.datetime.now()
+                    currentHour = currentHour.strftime("%H:%M:%S")
+                    
+                
+                    
+                    userToken = request.cookies.get('token')
+                    userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
+                    userEmail = (userTokenDecode["user"])   
+                    selectIsApprovedByRegisterNumber = "SELECT isApproved from agendamento WHERE email = '" + userEmail + "'"
+                    
+                    cursor.execute(selectIsApprovedByRegisterNumber)
+                    isApproved = cursor.fetchone()
+                    print(isApproved)
+                    
+                    cursor.execute("INSERT into historicoAcesso (id , currentDate, currentHour, isApproved) values (?, ?, ?, ?)",(idUser,currentDate, currentHour, isApproved))  
                     con.commit() 
 
                 except sqlite3.Error as error:

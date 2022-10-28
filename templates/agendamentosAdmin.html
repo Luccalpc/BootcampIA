@@ -33,13 +33,17 @@
             <td>{{row["visitDate"]}}</td>
             <td>{{row["visitReason"]}}</td>
             <td>{{row["status"]}}</td>
-            <td>
-                <form action="/aprovarAgendamento" method="GET">
-                    <button type="submit" name="botao-aprovar" value="{{ row.registro }}"
-                        class="btn btn-success">Aprovar</button>
+            <td style="display: flex; gap: 2%;">
+                <form action="/aprovarAgendamento" method="POST">
+                    <button type="submit" name="botao-aprovar" value="{{ row[0] }}" class="btn btn-success">Aprovar
+                    </button>
                 </form>
-                <button name="botao-reprovar" value="{{ row.registro }}" href="/reprovarAgendamento"
-                    class="btn btn-danger">Reprovar</button>
+
+                <form action="/reprovarAgendamento" method="POST">
+                    <button type="submit" name="botao-reprovar" value="{{ row[0] }}" class="btn btn-danger">Reprovar
+                    </button>
+                </form>
+
             </td>
 
         </tr>
@@ -49,7 +53,7 @@
 
     <br><br>
 
-    <a onclick="history.back(-1)" class="btn btn-secondary">Voltar</a>
+    <a onclick="history.back('/admin')" class="btn btn-secondary">Voltar</a>
 
 </body>
 
