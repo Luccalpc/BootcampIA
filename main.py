@@ -1,3 +1,4 @@
+import hashlib
 import os
 from datetime import datetime
 import datetime
@@ -63,6 +64,7 @@ def verify():
 
         email = request.form ['email']
         password = request.form ['password']
+        password = hashlib.sha512( str( password ).encode("utf-8") ).hexdigest()
 
         print(email,password)
 
@@ -115,9 +117,10 @@ def my_form_post():
             password = request.form["password"]
             cpf = request.form["cpf"]
             birthDate = request.form["birthDate"]     
-            with sqlite3.connect("db/bootcamp.db") as con:  
+            with sqlite3.connect("db/bootcamp.db") as con:
+                passwordHash = hashlib.sha512( str( password ).encode("utf-8") ).hexdigest()
                 cur = con.cursor()  
-                cur.execute("INSERT into visitors (name,email,password,cpf,birthDate,isAdmin ) values (?,?,?,?,?,?)",(name,email,password,cpf,birthDate,0))  
+                cur.execute("INSERT into visitors (name,email,password,cpf,birthDate,isAdmin ) values (?,?,?,?,?,?)",(name, email, passwordHash ,cpf , birthDate, 0))  
                 con.commit()  
                 msg = "Employee successfully Added" 
         except:  
@@ -153,7 +156,7 @@ def agendarVisita():
             print('f')
             with sqlite3.connect("db/bootcamp.db") as con:  
                 cur = con.cursor()  
-                cur.execute("INSERT into agendamento(email,name,visitDate,visitReason) values (?,?,?,?)",(userEmail,name,visitDate,visitReason))  
+                cur.execute("INSERT into agendamento(email,name,visitDate,visitReason, status) values (?,?,?,?,?)",(userEmail,name,visitDate,visitReason, 'Pendente de aprovação'))  
                 con.commit()  
                 msg = "Book successfully Added" 
         except:  
@@ -172,11 +175,29 @@ def agendamentos():
         con = sqlite3.connect("db/bootcamp.db")  
         con.row_factory = sqlite3.Row  
         cur = con.cursor()  
-        queryUserEmail = "SELECT registro,name,visitDate,visitReason FROM agendamento WHERE email = '" + userEmail + "'"
+        queryUserEmail = "SELECT registro,name,visitDate,visitReason, status FROM agendamento WHERE email = '" + userEmail + "'"
         print(queryUserEmail)
         cur.execute(queryUserEmail)  
         rows = cur.fetchall()  
-        return render_template("agendamentos.html",rows = rows)     
+        return render_template("agendamentosUser.html",rows = rows)     
+    except:          
+        return render_template("fail.html")  
+    
+@app.route("/aprovarAgendamento")  
+def aprovarAgendamento():  
+    try:
+        userToken = request.cookies.get('token')
+        userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
+        userEmail = (userTokenDecode["user"])  
+        con = sqlite3.connect("db/bootcamp.db")  
+        con.row_factory = sqlite3.Row  
+        cur = con.cursor()  
+        aprovar = request.form['botao-aprovar']
+        print('aprovar = ', aprovar)
+        query = "UPDATE agendamento SET status = 'aprovado' WHERE registro =" + aprovar
+        cur.execute(query)  
+        rows = cur.fetchall()  
+        return render_template("agendamentosUser.html",rows = rows)     
     except:          
         return render_template("fail.html")  
 
@@ -318,14 +339,19 @@ def deleteRecordUser():
         finally:  
             return render_template("index.html")
 
-# @app.route("/listaCaminhos")
-# def listaCaminhos():
-#     caminhos = [os.path.join('fotos', f) for f in os.listdir('fotos')]
-#     for caminhoImagem in caminhos:        
-#         if caminhoImagem[13] == '4':
-#             os.remove(caminhoImagem)
-#             print(caminhoImagem)
-#     return render_template('admin-dashboard.html')
+@app.route("/aprovacoesPendentes")
+def aprovacoesPendentes():
+    try:
+        con = sqlite3.connect("db/bootcamp.db")  
+        con.row_factory = sqlite3.Row  
+        cur = con.cursor()  
+        cur.execute("select * from agendamento")  
+        rows = cur.fetchall()  
+        return render_template("agendamentosAdmin.html",rows = rows) 
+        
+    except:  
+        con.rollback()  
+        return render_template("fail.html")  
 
 
 @app.route('/video_feed')
@@ -369,6 +395,7 @@ def registroPonto():
                     print("Connected to SQLite")
 
                     sqlite_select_query = "select * from visitors WHERE id =" + str(class_id)
+                    
                     cursor.execute(sqlite_select_query)
                     data = datetime.datetime.now()
                     linha = cursor.fetchall()

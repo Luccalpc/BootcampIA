@@ -18,22 +18,35 @@
     <table class="table table-hover">
         <thead class="thead-dark">
             <th>Registro</th>
-            <th>Nome</th>       
+            <th>Nome</th>
             <th>Data de Visita</th>
             <th>Motivo da Visita</th>
+            <th>Status</th>
+            <th>Aprovação</th>
         </thead>
 
         {% for row in rows %}
 
         <tr>
             <td>{{row["registro"]}}</td>
-            <td>{{row["name"]}}</td>             
+            <td>{{row["name"]}}</td>
             <td>{{row["visitDate"]}}</td>
             <td>{{row["visitReason"]}}</td>
+            <td>{{row["status"]}}</td>
+            <td>
+                <form action="/aprovarAgendamento" method="GET">
+                    <button type="submit" name="botao-aprovar" value="{{ row.registro }}"
+                        class="btn btn-success">Aprovar</button>
+                </form>
+                <button name="botao-reprovar" value="{{ row.registro }}" href="/reprovarAgendamento"
+                    class="btn btn-danger">Reprovar</button>
+            </td>
+
         </tr>
 
         {% endfor %}
     </table>
+
     <br><br>
 
     <a onclick="history.back(-1)" class="btn btn-secondary">Voltar</a>
