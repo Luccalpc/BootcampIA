@@ -11,26 +11,25 @@
     <title>Controle de acesso </title>
 </head>
 
-{% include 'header-admin.html' %}
+{% include 'header.html' %}
 
 <body>
+
     <table class="table table-hover">
         <thead class="thead-dark">
-            <th>ID</th>
-            <th>Nome</th>
-            <th>E-mail</th>
-            <th>CPF</th>
-            <th>Data de Nascimento</th>      
+            <th>Registro</th>
+            <th>Nome</th>       
+            <th>Data de Visita</th>
+            <th>Motivo da Visita</th>
         </thead>
 
         {% for row in rows %}
 
         <tr>
-            <td>{{row["id"]}}</td>
-            <td>{{row["name"]}}</td>
-            <td>{{row["email"]}}</td>
-            <td>{{row["cpf"]}}</td>
-            <td>{{row["birthDate"]}}</td>   
+            <td>{{row["registro"]}}</td>
+            <td>{{row["name"]}}</td>             
+            <td>{{row["visitDate"]}}</td>
+            <td>{{row["visitReason"]}}</td>
         </tr>
 
         {% endfor %}

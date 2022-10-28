@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 import datetime
 from lib2to3.pgen2 import token
@@ -82,7 +83,7 @@ def verify():
         if len(results) == 0:
             print ("Sorry, Wrong Password")         
         else:
-            token = jwt.encode({'user': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes= 5)}, app.config['SECRET_KEY'], algorithm="HS256")
+            token = jwt.encode({'user': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes= 30)}, app.config['SECRET_KEY'], algorithm="HS256")
             
             print(res)
 
@@ -113,12 +114,10 @@ def my_form_post():
             email = request.form["email"]
             password = request.form["password"]
             cpf = request.form["cpf"]
-            birthDate = request.form["birthDate"]
-            visitDate = request.form["visitDate"]
-            visitReason = request.form["visitReason"] 
+            birthDate = request.form["birthDate"]     
             with sqlite3.connect("db/bootcamp.db") as con:  
                 cur = con.cursor()  
-                cur.execute("INSERT into visitors (name,email,password,cpf,birthDate,visitDate,visitReason, isAdmin ) values (?,?,?,?,?,?,?, ?)",(name,email,password,cpf,birthDate,visitDate,visitReason, 0))  
+                cur.execute("INSERT into visitors (name,email,password,cpf,birthDate,isAdmin ) values (?,?,?,?,?,?)",(name,email,password,cpf,birthDate,0))  
                 con.commit()  
                 msg = "Employee successfully Added" 
         except:  
@@ -132,6 +131,55 @@ def my_form_post():
 @app.route('/cadastro-camera')
 def cadastroCamera():
     return render_template('cadastroCam.html')
+
+
+            
+@app.route("/agendarVisita",methods = ["POST","GET"] )  
+def agendarVisita():
+    msg = "msg"  
+    if request.method == "POST":  
+        try:              
+            userToken = request.cookies.get('token')
+            print('a')
+            userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
+            print('b')
+            userEmail = (userTokenDecode["user"])  
+            print('c')
+            name = request.form["name"]
+            print('d')
+            visitDate = request.form["visitDate"]
+            print('e')
+            visitReason = request.form["visitReason"] 
+            print('f')
+            with sqlite3.connect("db/bootcamp.db") as con:  
+                cur = con.cursor()  
+                cur.execute("INSERT into agendamento(email,name,visitDate,visitReason) values (?,?,?,?)",(userEmail,name,visitDate,visitReason))  
+                con.commit()  
+                msg = "Book successfully Added" 
+        except:  
+            con.rollback()  
+            msg = "We can not book"  
+        finally:  
+            con.close()  
+    return render_template('agendarVisita.html')
+
+@app.route("/agendamentos")  
+def agendamentos():  
+    try:
+        userToken = request.cookies.get('token')
+        userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
+        userEmail = (userTokenDecode["user"])  
+        con = sqlite3.connect("db/bootcamp.db")  
+        con.row_factory = sqlite3.Row  
+        cur = con.cursor()  
+        queryUserEmail = "SELECT registro,name,visitDate,visitReason FROM agendamento WHERE email = '" + userEmail + "'"
+        print(queryUserEmail)
+        cur.execute(queryUserEmail)  
+        rows = cur.fetchall()  
+        return render_template("agendamentos.html",rows = rows)     
+    except:          
+        return render_template("fail.html")  
+
 
 @app.route('/registro')
 def registro():
@@ -151,8 +199,8 @@ def historicoPonto():
         return render_template("historicoPonto.html",rows = rows) 
     
     except:  
-            con.rollback()  
-            return render_template("fail.html")  
+        con.rollback()  
+        return render_template("fail.html")  
 
 @app.route('/crud')
 def crud():
@@ -252,8 +300,15 @@ def deleteRecordUser():
             userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
             userEmail = (userTokenDecode["user"])   
             cur = con.cursor()  
+            queryUserID = "SELECT id from visitors WHERE email = '" + userEmail + "'"
+            cur.execute(queryUserID)
+            userID = cur.fetchone()[0]
             queryUserEmail = "DELETE from visitors WHERE email = '" + userEmail + "'"
             cur.execute(queryUserEmail)
+            caminhos = [os.path.join('fotos', f) for f in os.listdir('fotos')]
+            for caminhoImagem in caminhos:        
+                if caminhoImagem[13] == str(userID):
+                    os.remove(caminhoImagem)            
             print(queryUserEmail)
         
         except:  
@@ -262,6 +317,15 @@ def deleteRecordUser():
           
         finally:  
             return render_template("index.html")
+
+# @app.route("/listaCaminhos")
+# def listaCaminhos():
+#     caminhos = [os.path.join('fotos', f) for f in os.listdir('fotos')]
+#     for caminhoImagem in caminhos:        
+#         if caminhoImagem[13] == '4':
+#             os.remove(caminhoImagem)
+#             print(caminhoImagem)
+#     return render_template('admin-dashboard.html')
 
 
 @app.route('/video_feed')

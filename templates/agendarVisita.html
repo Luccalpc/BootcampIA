@@ -19,55 +19,36 @@
 
 <body>
 
-    <form action="/cadastro" id="form" class="container" method="post">
+    <form action="/agendarVisita" id="form" class="container" method="post">
         <div class="row">
             <div class="col form-group">
                 <label for="input-name">Nome</label>
                 <input name="name" id="name" type="text" class="form-control" placeholder="Digite o seu nome" required
                     maxlength="100">
             </div>
-        </div>
-
-        <div class="row">
-            <div class="col form-group">
-                <label for="input-email">E-mail</label>
-                <input name="email" id="email" type="email" class="form-control"
-                    placeholder="Exemplo: 'teste@email.com'" required maxlength="100">
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col form-group">
-                <label for="input-password">Senha</label>
-                <input name="password" id="password" type="password" class="form-control" placeholder="Digite sua senha"
-                    required maxlength="30">
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col form-group">
-                <label for="input-cpf">CPF</label>
-                <input pattern="[0-9]{3}.[0-9]{3}.[0-9]{3}-[0-9]{2}" name="cpf" id="cpf" type="text"
-                    class="form-control" placeholder="Digite seu CPF" required maxlength="14">
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col form-group">
-                <label for="input-birthDate">Data de nascimento</label>
-                <input pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" name="birthDate" id="birthDate" type="date"
-                    class="form-control date form-control" placeholder="dd/mm/yyyy" required>
-            </div>            
         </div>      
 
+            <div class="col form-group">
+                <label for="input-visitDate">Data da Visita</label>
+                <input pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" name="visitDate" id="visitDate" type="date"
+                    class="form-control date form-control" placeholder="dd/mm/yyyy" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label for="input-visitReason">Motivo da visita</label>
+                <textarea name="visitReason" id="visitReason" type="text" class="form-control date form-control"
+                    placeholder="Informe o motivo da visita" required></textarea>
+            </div>
+        </div>
+
         <div class="form-group">
-            <button id="btnFetch" type="submit" class="btn btn-primary">Cadastrar</button>
+            <button id="btnFetch" type="submit" class="btn btn-primary">Agendar Visita</button>
         </div>
     </form>
 
 </body>
 {% include 'footer.html' %}
-
-
 
 </html>
