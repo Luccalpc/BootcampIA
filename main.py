@@ -1,10 +1,13 @@
+from datetime import datetime
 import datetime
+from lib2to3.pgen2 import token
 import time
+from urllib import response
 import cv2
 import numpy as np
 import sqlite3  
 from tkinter import messagebox
-from flask import Flask, render_template, Response, request, jsonify
+from flask import Flask, make_response, render_template, Response, request, jsonify
 import jwt
 from functools import wraps
 
@@ -77,14 +80,23 @@ def verify():
         print(results)
         
         if len(results) == 0:
-            print ("Sorry, Wrong Password")             
+            print ("Sorry, Wrong Password")         
         else:
             token = jwt.encode({'user': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes= 5)}, app.config['SECRET_KEY'], algorithm="HS256")
+            
+            print(res)
+
             print(token)     
             if res == 0:
-                return render_template('user-dashboard.html', name = name)
+                response = make_response(render_template('user-dashboard.html', name = name, email = email))
+                response.set_cookie('token', token)
+                return response
+                #return render_template('user-dashboard.html', name = name, email = email)
             else:
-                return render_template('admin-dashboard.html', name = name)
+                response = make_response(render_template('admin-dashboard.html', name = name, email = email))
+                response.set_cookie('token', token)
+                return response
+                #return render_template('admin-dashboard.html', name = name, email = email)
                 
     return render_template('index.html')
 
@@ -127,23 +139,20 @@ def registro():
 
 
 
-@app.route('/consulta')
-def consulta():
+@app.route('/historicoPonto')
+def historicoPonto():
     try:
-        con = sqlite3.connect("db/ponto.db")  
+        con = sqlite3.connect("db/bootcamp.db")  
         con.row_factory = sqlite3.Row  
         cur = con.cursor()  
-        cur.execute("select * from Ponto")  
-        rows = cur.fetchall()  
-        return render_template("consulta.html",rows = rows) 
-        con.close()   
-        exit(0)
+        cur.execute("select * from ponto")  
+        rows = cur.fetchall()
+
+        return render_template("historicoPonto.html",rows = rows) 
     
     except:  
             con.rollback()  
             return render_template("fail.html")  
-            con.close()  
-            exit(0) 
 
 @app.route('/crud')
 def crud():
@@ -161,75 +170,113 @@ def delete():
 def success():
     return render_template('success.html')
 
-@app.route("/listaFuncionarios")  
-def view():  
+@app.route("/listaVisitantesAdmin")  
+def listaVisitantesAdmin():  
     try:
-        con = sqlite3.connect("db/funcionario.db")  
+        con = sqlite3.connect("db/bootcamp.db")  
         con.row_factory = sqlite3.Row  
         cur = con.cursor()  
-        cur.execute("select * from Employees")  
+        cur.execute("select * from visitors")  
         rows = cur.fetchall()  
-        return render_template("listaFuncionarios.html",rows = rows) 
-        con.close()   
-        exit(0)
+        return render_template("listaVisitantesAdmin.html",rows = rows) 
     
     except:  
             con.rollback()  
             return render_template("fail.html")  
-            con.close()  
-            exit(0) 
-                 
+            
+            
+@app.route("/listaVisitantesUser")  
+def listaVisitantesUser():  
+    try:
+        userToken = request.cookies.get('token')
+        userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
+        userEmail = (userTokenDecode["user"])  
+        con = sqlite3.connect("db/bootcamp.db")  
+        con.row_factory = sqlite3.Row  
+        cur = con.cursor()  
+        queryUserEmail = "SELECT * FROM visitors WHERE email = '" + userEmail + "'"
+        print(queryUserEmail)
+        cur.execute(queryUserEmail)  
+        rows = cur.fetchall()  
+        return render_template("listaVisitantesUser.html",rows = rows) 
+    
+    except:  
+            con.rollback()  
+            return render_template("fail.html")  
+
+@app.route('/get')
+def getCookie():
+    myapp = request.cookies.get('token')
+    return 'The Cookie Content Is ' + myapp
     
 @app.route("/savedetails",methods = ["POST","GET"])  
 def saveDetails():  
     msg = "msg"  
     if request.method == "POST":  
         try:  
-            rgfuncional = request.form["rgfuncional"]
             name = request.form["name"]  
-            email = request.form["email"]  
-            with sqlite3.connect("db/funcionario.db") as con:  
+            email = request.form["email"]
+            password = request.form["password"]
+            cpf = request.form["cpf"]
+            birthDate = request.form["birthDate"]
+            visitDate = request.form["visitDate"]
+            visitReason = request.form["visitReason"] 
+            with sqlite3.connect("db/bootcamp.db") as con:  
                 cur = con.cursor()  
-                cur.execute("INSERT into Employees (rgfuncional,name, email) values (?,?,?)",(rgfuncional,name,email))  
+                cur.execute("INSERT into visitors (name,email,password,cpf,birthDate,visitDate,visitReason, isAdmin ) values (?,?,?,?,?,?,?, ?)",(name,email,password,cpf,birthDate,visitDate,visitReason, 0))  
                 con.commit()  
+                msg = "Employee successfully Added" 
         except:  
             con.rollback()                
         finally:  
             return render_template("success.html")  
-            con.close()  
 
-@app.route("/deleterecord",methods = ["POST"])  
-def deleterecord():  
+@app.route("/deleteRecordAdmin",methods = ["POST"])  
+def deleteRecordAdmin():  
     id = request.form["id"]  
-    with sqlite3.connect("db/funcionario.db") as con:  
+    with sqlite3.connect("db/bootcamp.db") as con:  
         try:  
             cur = con.cursor()  
-            cur.execute("delete from Employees where id = ?",id)  
+            cur.execute("delete from visitors where id = ?",id)  
             msg = "record successfully deleted"  
         except:  
             msg = "can't be deleted"  
         finally:  
             return render_template("delete_record.html",msg = msg) 
+        
+@app.route("/deleteRecordUser", methods = ["GET"])  
+def deleteRecordUser(): 
+    with sqlite3.connect("db/bootcamp.db") as con: 
+        try:
+            userToken = request.cookies.get('token')
+            userTokenDecode = jwt.decode(userToken, app.config['SECRET_KEY'],algorithms="HS256")
+            userEmail = (userTokenDecode["user"])   
+            cur = con.cursor()  
+            queryUserEmail = "DELETE from visitors WHERE email = '" + userEmail + "'"
+            cur.execute(queryUserEmail)
+            print(queryUserEmail)
+        
+        except:  
+            con.rollback()  
+            return render_template("fail.html")
+          
+        finally:  
+            return render_template("index.html")
 
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(portaria(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/regponto')
 def regponto():
-    return Response(work(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(registroPonto(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/video_capture')
 def video_capture():
-    return Response(capture(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(capture(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-
-
-def work():
+def registroPonto():
     cap = cv2.VideoCapture(0)
     time.sleep(2)
     i = 0
@@ -238,11 +285,9 @@ def work():
         i+=1
         ret, img = cap.read()
 
-        if findface and i<10:
+        if findface and i<10 and confidence < 65:
             msg = 'Registro de Ponto Gravado com Sucesso !!'
             cv2.putText(img, msg, (100, 25), font, 1, (0, 255, 0))
-            
-        
 
         image_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         detected_faces = detector_face.detectMultiScale(image_grey, scaleFactor=1.5, minSize=(30, 30))
@@ -251,58 +296,40 @@ def work():
                 image_face = cv2.resize(image_grey[y:y + a, x:x + l], (width, height))
                 cv2.rectangle(img, (x, y), (x + l, y + a), (0, 0, 255), 2)
                 class_id, confidence = recognizer.predict(image_face)
-                if i >= 30 and class_id==1 and confidence <65:
-                    findface = True
-                    i=0
-                    nome='Lucca'
-                    try:  
-                        rgfuncional = 1
-                        name = 'Lucca' 
-                        data = datetime.now() 
-                        with sqlite3.connect("db/ponto.db") as con:  
-                            cur = con.cursor()  
-                            cur.execute("INSERT into Ponto (rgfuncional,name, data) values (?,?,?)",(rgfuncional,name,data))  
-                            con.commit()   
-                            #messagebox.showinfo('Ponto registrado com sucesso')              
-                    except:  
-                        con.rollback()             
-                    finally:  
-                        con.close()  
-                elif i >= 30 and class_id==6 and confidence <65:
-                    findface = True
-                    i=0
-                    nome = 'Mbappe'
-                    try:  
-                        rgfuncional = 5
-                        name = 'Mbappe' 
-                        data = datetime.now() 
-                        with sqlite3.connect("db/ponto.db") as con:  
-                            cur = con.cursor()  
-                            cur.execute("INSERT into Ponto (rgfuncional,name, data) values (?,?,?)",(rgfuncional,name,data))  
-                            con.commit() 
-                            #messagebox.showinfo('Ponto registrado com sucesso')                
-                    except:  
-                        con.rollback()             
-                    finally:  
-                        con.close()
+                findface = True
+                i=0
+                
+                try:
+                    con = sqlite3.connect("db/bootcamp.db")
+                    cursor = con.cursor()
+                    print("Connected to SQLite")
+
+                    sqlite_select_query = "select * from visitors WHERE id =" + str(class_id)
+                    cursor.execute(sqlite_select_query)
+                    data = datetime.datetime.now()
+                    linha = cursor.fetchall()
+                    for dado in linha:
+                        idUser = dado[0]
+                        nameUser = dado[1]
+                        emailUser = dado[2]
+                        cpfUser = dado[4]
+                        birthDateUser = dado[5]
+                        visitDateUser = dado[6]
+                        visitReasonUser = dado[7]
+                      
                         
-                elif i >=30:
-                    i=0
-                    findface = True
-                    nome = 'Desconhecido'
-                    try:  
-                        rgfuncional = -1
-                        name = 'Desconhecido' 
-                        data = datetime.now()   
-                        with sqlite3.connect("db/ponto.db") as con:  
-                            cur = con.cursor()  
-                            cur.execute("INSERT into Ponto (rgfuncional,name, data) values (?,?,?)",(rgfuncional,name,data))  
-                            con.commit()   
-                            #messagebox.showinfo('Funcionário não encontrado')              
-                    except:  
-                        con.rollback()             
-                    finally:  
+                    cursor.execute("INSERT into ponto (id ,name, email, cpf, birthDate, visitDate, visitReason ) values (?, ?, ?, ?, ?, ?, ?)",(idUser,nameUser, emailUser, cpfUser, birthDateUser, visitDateUser, visitReasonUser))  
+                    con.commit() 
+
+                except sqlite3.Error as error:
+                    print("Failed to read data from table", error)
+                    
+                finally:
+                    if con:
                         con.close()
+                        print("The Sqlite connection is closed")
+                    
+                        
                 #cv2.putText(img, str(i), (x, y + (a + 50)), font, 1, (0, 255, 255))
                 #cv2.putText(img, nome, (x, y + (a + 30)), font, 2, (0, 255, 0))
                 #cv2.putText(img, str(confidence), (x, y + (a + 50)), font, 1, (0, 255, 255))
@@ -351,9 +378,10 @@ def capture():
             break           
 
 
-def gen():
+def portaria():
     cap = cv2.VideoCapture(0)
     i = 0
+                
     while cap.isOpened():
 
         i+=1
@@ -366,11 +394,27 @@ def gen():
                 cv2.rectangle(img, (x, y), (x + l, y + a), (0, 0, 255), 2)
                 class_id, confidence = recognizer.predict(image_face)
                 if class_id == 1 and confidence < 65:
-                    nome = "Acesso Permitido"
+                    status = "Acesso Permitido"
+                    name = "Renan"
+                    
+                elif class_id == 2 and confidence < 65:
+                    status = "Acesso Permitido"
+                    name = "Lucca"
+                    
+                elif class_id == 3 and confidence < 65:
+                    status = "Acesso Negado"
+                    name = "Mbappe"
+                    
+                elif class_id == 4 and confidence < 65:
+                    status = "Acesso Negado"
+                    name = "Gelson"
+                    
                 else:
-                    nome = "Acesso Negado"
-                cv2.putText(img, nome, (x, y + (a + 30)), font, 2, (255, 180, 0))
-                cv2.putText(img, str(confidence), (x, y + (a + 50)), font, 1, (0, 255, 255))
+                    name = "Desconhecido"
+                    status = "Acesso Negado"
+                cv2.putText(img, name, (x, y + (a + 30)), font, 2, (0, 255, 0))
+                cv2.putText(img, status, (x, y + (a + 65)), font, 2, (255, 180, 0))
+                cv2.putText(img, str(confidence), (x, y + (a + 85)), font, 1, (0, 255, 255))
                 
 
             frame = cv2.imencode('.jpg', img)[1].tobytes()
@@ -378,3 +422,5 @@ def gen():
             time.sleep(0.1)
         else:
             break
+        
+   

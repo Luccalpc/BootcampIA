@@ -17,8 +17,12 @@
 {% include 'header.html' %}
 
 <body>
-    <h1>Painel de usuário</h1>
-    <p>Bem vindo, {{ name }}</p>
+    <h1>Painel de Usuário</h1>
+    <p>Bem vindo, {{name}}</p>
+
+    <a href="/listaVisitantesUser" class="btn btn-info">Meu Agendamento</a>
+    <a href="/deleteRecordUser" class="btn btn-danger">Excluir Cadastro</a>
+
 </body>
 
 {% include 'footer.html' %}

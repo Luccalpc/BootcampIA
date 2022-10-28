@@ -18,26 +18,31 @@
     <table class="table table-hover">
         <thead class="thead-dark">
             <th>ID</th>
-            <th>RG Funcional</th>
             <th>Nome</th>
-            <th>Email</th>
+            <th>E-mail</th>
+            <th>CPF</th>
+            <th>Data de Nascimento</th>
+            <th>Data de Visita</th>
+            <th>Motivo da Visita</th>
         </thead>
 
         {% for row in rows %}
 
         <tr>
             <th>{{row["id"]}}</th>
-            <th>{{row["rgfuncional"]}}</th>
-            <td>{{row["name"]}}</td>
+            <th>{{row["name"]}}</th>
             <td>{{row["email"]}}</td>
-
+            <td>{{row["cpf"]}}</td>
+            <td>{{row["birthDate"]}}</td>
+            <td>{{row["visitDate"]}}</td>
+            <td>{{row["visitReason"]}}</td>
         </tr>
 
         {% endfor %}
     </table>
     <br><br>
 
-    <a href="/" class="btn btn-secondary">Voltar</a>
+    <a onclick="history.back(-1)" class="btn btn-secondary">Voltar</a>
 
 </body>
 

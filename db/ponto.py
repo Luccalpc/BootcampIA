@@ -1,7 +1,10 @@
 import sqlite3  
   
-con = sqlite3.connect("db/ponto.db")  
-print("O Banco de dados ponto.py foi criado com Sucesso !!! ")    
-con.execute("create table Ponto (id INTEGER PRIMARY KEY AUTOINCREMENT,rgfuncional INTEGER, name TEXT NOT NULL, data DATE UNIQUE NOT NULL)")   
-print("Tabelas Criadas com Sucesso.")   
-con.close()  
+connection = sqlite3.connect("db/ponto.db")   
+cursor = connection.cursor()
+
+
+command = """CREATE TABLE IF NOT EXISTS ponto(id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, cpf TEXT NOT NULL, birthDate TEXT NOT NULL, visitDate TEXT NOT NULL, visitReason TEXT NOT NULL)"""
+cursor.execute(command)
+print("O Banco de dados Bancotest.db foi criado com Sucesso !!! ") 
+cursor.close() 
