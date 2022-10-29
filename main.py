@@ -474,9 +474,9 @@ def capture():
 def portaria():
     cap = cv2.VideoCapture(0)
     i = 0
+    approvedPeople = (1,3,4)
                 
     while cap.isOpened():
-
         i+=1
         ret, img = cap.read()
         image_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -484,31 +484,60 @@ def portaria():
         if ret:
             for (x, y, l, a) in detected_faces:
                 image_face = cv2.resize(image_grey[y:y + a, x:x + l], (width, height))
-                cv2.rectangle(img, (x, y), (x + l, y + a), (0, 0, 255), 2)
                 class_id, confidence = recognizer.predict(image_face)
-                if class_id == 1 and confidence < 65:
-                    status = "Acesso Permitido"
-                    name = "Renan"
-                    
-                elif class_id == 2 and confidence < 65:
-                    status = "Acesso Permitido"
-                    name = "Lucca"
-                    
-                elif class_id == 3 and confidence < 65:
-                    status = "Acesso Negado"
-                    name = "Mbappe"
-                    
-                elif class_id == 4 and confidence < 65:
-                    status = "Acesso Negado"
-                    name = "Gelson"
-                    
+                if class_id in approvedPeople:
+                    cv2.rectangle(img, (x, y), (x + l, y + a), (0, 255, 0), 2)
                 else:
-                    name = "Desconhecido"
-                    status = "Acesso Negado"
-                cv2.putText(img, name, (x, y + (a + 30)), font, 2, (0, 255, 0))
-                cv2.putText(img, status, (x, y + (a + 65)), font, 2, (255, 180, 0))
-                cv2.putText(img, str(confidence), (x, y + (a + 85)), font, 1, (0, 255, 255))
-                
+                    cv2.rectangle(img, (x, y), (x + l, y + a), (0, 0, 255), 2)
+               
+                if i >= 30 and confidence < 65:
+                    findface = True
+                    i=0                
+                    currentDate = date.today()
+                    currentDate = currentDate.strftime("%d/%m/%Y")       
+                    currentHour = datetime.datetime.now()
+                    currentHour = currentHour.strftime("%H:%M:%S")  	                
+                    try:
+                        con = sqlite3.connect("db/bootcamp.db")
+                        cursor = con.cursor() 
+                        name = "select name from visitors where id =" + str(class_id)
+                        query = "select status from agendamento where id =" + str(class_id)
+                        cursor.execute(query)      
+                        isApproved = cursor.fetchone()[0]  
+                        if isApproved == 'Aprovado':           
+                            cursor.execute("INSERT into historicoAcesso (id , currentDate, currentHour, isApproved) values (?, ?, ?, ?)",(class_id,currentDate, currentHour, isApproved))  
+                            con.commit() 
+                            print('FFFFFFFFFFFFFFFFFFF')
+                            cv2.putText(img, 'Gelson', (x, y + (a + 30)), font, 2, (0, 255, 0))
+                            cv2.putText(img, 'Acesso Permitido', (x, y + (a + 65)), font, 2, (255, 180, 0))
+                            cv2.putText(img, str(confidence), (x, y + (a + 85)), font, 1, (0, 255, 255))
+                    except:
+                        for i in range (0,500):
+                            cv2.putText(img, 'Acesso Negado', (x, y + (a + 65)), font, 2, (0, 0, 255))
+                        con.rollback()                    
+                    finally:                
+                        con.close()		                  
+
+
+                # if class_id == 1 and confidence < 65:
+                #     status = "Acesso Permitido"
+                #     name = "Renan"
+                    
+                # elif class_id == 2 and confidence < 65:
+                #     status = "Acesso Permitido"
+                #     name = "Lucca"
+                    
+                # elif class_id == 3 and confidence < 65:
+                #     status = "Acesso Negado"
+                #     name = "Mbappe"
+                    
+                # elif class_id == 4 and confidence < 65:
+                #     status = "Acesso Negado"
+                #     name = "Gelson"                    
+                # else:
+                #     name = "Desconhecido"
+                #     status = "Acesso Negado"               
+                    
 
             frame = cv2.imencode('.jpg', img)[1].tobytes()
             yield b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
