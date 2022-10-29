@@ -19,12 +19,10 @@
         <thead class="thead-dark">
             <tr>
                 <th scope="col">Id</th>
-                <th scope="col">Nome</th>
-                <th scope="col">E-mail</th>
-                <th scope="col">CPF</th>
-                <th scope="col">Data de Nascimento</th>
-                <th scope="col">Data de Visita</th>
-                <th scope="col">Motivo</th>
+                <th scope="col">Data</th>
+                <th scope="col">Hora</th>
+                <th scope="col">Status Aprovação</th>
+
             </tr>
         </thead>
 
@@ -32,13 +30,9 @@
 
         <tr>
             <td>{{row["id"]}}</td>
-            <td>{{row["name"]}}</td>
-            <td>{{row["email"]}}</td>
-            <td>{{row["cpf"]}}</td>
-            <td>{{row["birthDate"]}}</td>
-            <td>{{row["visitDate"]}}</td>
-            <td>{{row["visitReason"]}}</td>
-
+            <td>{{row["currentDate"]}}</td>
+            <td>{{row["currentHour"]}}</td>
+            <td>{{row["isApproved"]}}</td>
         </tr>
         {% endfor %}
     </table>
