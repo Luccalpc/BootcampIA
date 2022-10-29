@@ -228,7 +228,7 @@ def historicoAcesso():
         con = sqlite3.connect("db/bootcamp.db")  
         con.row_factory = sqlite3.Row  
         cur = con.cursor()  
-        cur.execute("select * from ponto")  
+        cur.execute("select * from historicoAcesso ORDER BY currentHour DESC")  
         rows = cur.fetchall()
 
         return render_template("historicoAcesso.html",rows = rows) 
@@ -388,50 +388,46 @@ def registroAcesso():
 	
     while cap.isOpened():
         i+=1
-        ret, img = cap.read()
+        conectado, img = cap.read()
 
-        if findface and i<10 and confidence < 65:
+        if findface and i>100:
             msg = 'Registro de Ponto Gravado com Sucesso !!'
             cv2.putText(img, msg, (100, 25), font, 1, (0, 255, 0))
 
         image_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         detected_faces = detector_face.detectMultiScale(image_grey, scaleFactor=1.5, minSize=(30, 30))        
-			
-        
+		        
         for (x, y, l, a) in detected_faces:
             image_face = cv2.resize(image_grey[y:y + a, x:x + l], (width, height))
             cv2.rectangle(img, (x, y), (x + l, y + a), (0, 0, 255), 2)
             class_id, confidence = recognizer.predict(image_face)
-            findface = True
-            i=0
-            
-            currentDate = date.today()
-            currentDate = currentDate.strftime("%d/%m/%Y")       
-            currentHour = datetime.datetime.now()
-            currentHour = currentHour.strftime("%H:%M:%S")  	
-                    
-            
-            try:
-                print('AAAAAAAAAAAAAAAAAAAAAAAAA') 
-                con = sqlite3.connect("db/bootcamp.db")
-                cursor = con.cursor() 
-                #query = "select isApproved from agendamento where id =" + class_id
-                print('BBBBBBBBBBBBB')  
-                query = "select status from agendamento where id = 3" #+ str(class_id)
-                print('cccccccccccccccccc')  
-                print(class_id)
-                print('ddddddddddddddd') 
-                cursor.execute(query)
-                print('eeeeeeeeeeee') 
-                isApproved = cursor.fetchone()[0]  
-                print('ffffffffffB')                 
-                cursor.execute("INSERT into historicoAcesso (id , currentDate, currentHour, isApproved) values (?, ?, ?, ?)",(class_id,currentDate, currentHour, isApproved))  
-                con.commit() 
-            except:
-                con.rollback()                    
-            finally:                
-                con.close()		
-                
+            if i >= 30 and confidence < 65:
+                findface = True
+                i=0                
+                currentDate = date.today()
+                currentDate = currentDate.strftime("%d/%m/%Y")       
+                currentHour = datetime.datetime.now()
+                currentHour = currentHour.strftime("%H:%M:%S")  	                
+                try:
+                    con = sqlite3.connect("db/bootcamp.db")
+                    cursor = con.cursor() 
+                    query = "select status from agendamento where id =3" #+ str(class_id)
+                    cursor.execute(query)
+
+                    isApproved = cursor.fetchone()[0]                  
+                    cursor.execute("INSERT into historicoAcesso (id , currentDate, currentHour, isApproved) values (?, ?, ?, ?)",(class_id,currentDate, currentHour, isApproved))  
+                    con.commit() 
+                except:
+                    con.rollback()                    
+                finally:                
+                    con.close()		
+                        
+        
+        frame = cv2.imencode('.jpg', img)[1].tobytes()
+        yield b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
+        time.sleep(0.1)
+        
+
 
         frame = cv2.imencode('.jpg', img)[1].tobytes()
         yield b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
