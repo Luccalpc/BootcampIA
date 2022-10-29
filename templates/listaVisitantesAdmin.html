@@ -22,8 +22,8 @@
             <th>E-mail</th>
             <th>CPF</th>
             <th>Data de Nascimento</th>
-            <th>Data de Visita</th>
-            <th>Motivo da Visita</th>
+            <!--<th>Data de Visita</th>
+            <th>Motivo da Visita</th>-->
         </thead>
 
         {% for row in rows %}
@@ -34,8 +34,8 @@
             <td>{{row["email"]}}</td>
             <td>{{row["cpf"]}}</td>
             <td>{{row["birthDate"]}}</td>
-            <td>{{row["visitDate"]}}</td>
-            <td>{{row["visitReason"]}}</td>
+            <!--<td>{{row["visitDate"]}}</td>
+            <td>{{row["visitReason"]}}</td>-->
         </tr>
 
         {% endfor %}

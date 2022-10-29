@@ -5,6 +5,19 @@
     font-family: 'Roboto', sans-serif !important;
 }
 
+div.card{
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+}
+
+div.name-user{
+    display: block;
+    width: 1200px !important;
+    margin: 20px auto 0 auto;
+    text-align: left;
+}
+
 .container-cabecalho{
     width: 100%;
     background-color: black;

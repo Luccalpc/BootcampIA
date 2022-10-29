@@ -29,8 +29,6 @@ def index():
         email = request.form ['email']
         password = request.form ['password']
 
-        print(email,password)
-
         query = "SELECT email,password FROM visitors where email= '"+email+"' and password = '"+password+"'"
         cursor.execute(query) 
 

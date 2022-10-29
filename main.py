@@ -1,4 +1,5 @@
 import hashlib
+import threading
 import os
 from datetime import datetime, date
 import datetime
@@ -52,7 +53,6 @@ def camera():
     return render_template('camera.html')
 
 @app.route('/user')
-@token_required
 def user():
     return render_template('user-dashboard.html')
 
@@ -238,6 +238,7 @@ def historicoAcesso():
         return render_template("fail.html")  
 
 @app.route('/crud')
+@token_required
 def crud():
     return render_template('crud.html')
 
@@ -268,7 +269,7 @@ def listaVisitantesAdmin():
             return render_template("fail.html")  
             
             
-@app.route("/listaVisitantesUser")  
+@app.route("/listaVisitantesUser") 
 def listaVisitantesUser():  
     try:
         userToken = request.cookies.get('token')
@@ -315,6 +316,7 @@ def saveDetails():
             return render_template("success.html")  
 
 @app.route("/deleteRecordAdmin",methods = ["POST"])  
+@token_required
 def deleteRecordAdmin():  
     id = request.form["id"]  
     with sqlite3.connect("db/bootcamp.db") as con:  
@@ -380,6 +382,7 @@ def regAcesso():
 def video_capture():
     return Response(capture(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+
 def registroAcesso():
     cap = cv2.VideoCapture(0)
     time.sleep(2)
@@ -429,6 +432,12 @@ def registroAcesso():
         
 
 
+        frame = cv2.imencode('.jpg', img)[1].tobytes()
+        yield b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
+        time.sleep(0.1)
+
+
+    
 def capture():
     connection = sqlite3.connect('db/bootcamp.db')
     cursor = connection.cursor()
@@ -470,46 +479,64 @@ def capture():
 def portaria():
     cap = cv2.VideoCapture(0)
     i = 0
-                
+    knownPeople = (1,3,4)                
     while cap.isOpened():
-
         i+=1
+        print('Oi', i)
         ret, img = cap.read()
         image_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         detected_faces = detector_face.detectMultiScale(image_grey, scaleFactor=1.5, minSize=(30, 30))
         if ret:
             for (x, y, l, a) in detected_faces:
                 image_face = cv2.resize(image_grey[y:y + a, x:x + l], (width, height))
-                cv2.rectangle(img, (x, y), (x + l, y + a), (0, 0, 255), 2)
                 class_id, confidence = recognizer.predict(image_face)
-                if class_id == 1 and confidence < 65:
-                    status = "Acesso Permitido"
-                    name = "Renan"
-                    
-                elif class_id == 2 and confidence < 65:
-                    status = "Acesso Permitido"
-                    name = "Lucca"
-                    
-                elif class_id == 3 and confidence < 65:
-                    status = "Acesso Negado"
-                    name = "Mbappe"
-                    
-                elif class_id == 4 and confidence < 65:
-                    status = "Acesso Negado"
-                    name = "Gelson"
-                    
-                else:
-                    name = "Desconhecido"
-                    status = "Acesso Negado"
-                cv2.putText(img, name, (x, y + (a + 30)), font, 2, (0, 255, 0))
-                cv2.putText(img, status, (x, y + (a + 65)), font, 2, (255, 180, 0))
-                cv2.putText(img, str(confidence), (x, y + (a + 85)), font, 1, (0, 255, 255))
-                
 
+                currentDate = date.today()
+                currentDate = currentDate.strftime("%d/%m/%Y")       
+                currentHour = datetime.datetime.now()
+                currentHour = currentHour.strftime("%H:%M:%S")
+
+                if class_id in knownPeople:
+                    cv2.rectangle(img, (x, y), (x + l, y + a), (0, 255, 0), 2)
+                else:
+                    cv2.rectangle(img, (x, y), (x + l, y + a), (0, 0, 255), 2)
+                try:
+                    con = sqlite3.connect("db/bootcamp.db")
+                    cursor = con.cursor() 
+                    queryName = "select name from visitors where id =" + str(class_id)
+                    cursor.execute(queryName)
+                    name = cursor.fetchone()[0] 
+                    cv2.putText(img, name, (x, y + (a + 30)), font, 2, (0, 255, 0))
+                    queryAgendamento = "select status from agendamento where id =" + str(class_id)
+                    cursor.execute(queryAgendamento) 
+                    isSchedule = cursor.fetchall()
+                    print('KKKKKKKKKK', len(isSchedule))
+                    if len(isSchedule) != 0:                        
+                        queryAgendamento = "select status from agendamento where id =" + str(class_id)
+                        cursor.execute(queryAgendamento)                         
+                        isSchedule = cursor.fetchone()[0] 
+                        if i >= 0 and i <25:    
+                            cv2.putText(img, 'Verificando...', (x, y + (a + 65)), font, 2, (0, 255, 255))                 
+                        elif isSchedule == 'Aprovado' and  i>= 25 and i< 55:
+                            print('Entrou no Approved')
+                            findface = True                             
+                            cursor.execute("INSERT into historicoAcesso (id , currentDate, currentHour, isApproved) values (?, ?, ?, ?)",(class_id,currentDate, currentHour, isSchedule))  
+                            con.commit() 
+                            cv2.putText(img, name, (x, y + (a + 30)), font, 2, (0, 255, 0))
+                            cv2.putText(img, 'Acesso Permitido', (x, y + (a + 65)), font, 2, (0, 255, 0))
+                        elif isSchedule == 'Reprovado' and i>= 25 and i< 55:
+                            cv2.putText(img, 'Acesso Negado', (x, y + (a + 65)), font, 2, (0, 0, 255))   
+                        else:                            
+                            i=0                       
+                except:    
+                    con.rollback()                    
+                finally:                       
+                    con.close()	   	               
             frame = cv2.imencode('.jpg', img)[1].tobytes()
             yield b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
             time.sleep(0.1)
-        else:
+        else:            
             break
         
+
    
